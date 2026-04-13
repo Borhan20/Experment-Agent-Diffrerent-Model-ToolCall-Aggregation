@@ -1,0 +1,59 @@
+# --- Python & Virtual Environments ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+build/
+dist/
+*.egg-info/
+
+# --- Environment Variables & Secrets (CRITICAL) ---
+.env
+.env.local
+.env.*.local
+.flaskenv
+# Avoid committing AWS or Google Cloud credentials
+.aws/
+credentials.json
+client_secret*.json
+
+# --- AI/ML Specifics ---
+# Local model weights or large datasets
+data/
+datasets/
+models/*.bin
+models/*.onnx
+.langchain/
+.langgraph/
+
+# --- IDEs & Editors ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# --- Databases & Logs ---
+*.log
+# If using local SQLite for testing
+*.sqlite3
+*.db
+# ClickHouse/PostgreSQL local data mounts
+logs/
+dump.rdb
+
+# --- Deployment & Infrastructure ---
+node_modules/
+.serverless/
+.terraform/
+*.tfstate*
+.aws-sam/
+dist-lambda/
+
+# --- Project Specifics ---
+# Flattened JSON/CSV outputs from your device DB scripts
+*.csv
+outputs/

@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip3 show:*)",
+      "Bash(pip install:*)",
+      "Bash(python3 -m venv .venv)",
+      "Bash(.venv/bin/pip install:*)",
+      "Bash(.venv/bin/python:*)",
+      "Bash(python:*)",
+      "Bash(python3 -m pytest --version)",
+      "Bash(python3:*)",
+      "Bash(openspec status:*)",
+      "Bash(openspec archive:*)"
+    ]
+  }
+}

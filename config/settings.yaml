@@ -1,0 +1,17 @@
+llm_roles:
+  router:
+    provider: gemini
+    model: gemini-2.0-flash
+    temperature: 0.0
+  tool_selector:
+    provider: gemini
+    model: gemini-2.0-flash
+    temperature: 0.0
+  transformer:
+    provider: gemini
+    model: gemini-2.0-flash-lite
+    temperature: 0.0
+  aggregator:
+    provider: gemini
+    model: gemini-2.0-flash-lite
+    temperature: 0.3

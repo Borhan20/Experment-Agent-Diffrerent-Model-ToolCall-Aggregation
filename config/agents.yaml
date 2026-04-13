@@ -1,0 +1,196 @@
+agents:
+  - id: weather_agent
+    name: Weather Agent
+    description: >
+      Handles weather-related queries. Can retrieve current weather conditions
+      and multi-day forecasts for any location worldwide.
+    tools:
+      - id: get_current_weather
+        name: Get Current Weather
+        description: >
+          Returns current weather conditions for a given location including
+          temperature, humidity, wind speed, and overall condition.
+        handler: demo.tools.weather.get_current_weather
+        input_schema:
+          type: object
+          properties:
+            location:
+              type: string
+              description: City name or location (e.g., "Dhaka", "London")
+          required:
+            - location
+        output_schema:
+          type: object
+          properties:
+            location:
+              type: string
+            temperature_c:
+              type: number
+            condition:
+              type: string
+            humidity_pct:
+              type: integer
+            wind_kph:
+              type: number
+        depends_on: []
+
+      - id: get_weather_forecast
+        name: Get Weather Forecast
+        description: >
+          Returns a 3-day weather forecast for a location. Depends on
+          get_current_weather to obtain the normalized location name.
+        handler: demo.tools.weather.get_weather_forecast
+        input_schema:
+          type: object
+          properties:
+            location:
+              type: string
+              description: City name (provided via dependency from get_current_weather)
+            days:
+              type: integer
+              description: Number of forecast days (default 3)
+          required:
+            - location
+        output_schema:
+          type: object
+          properties:
+            location:
+              type: string
+            forecasts:
+              type: array
+              items:
+                type: object
+        depends_on:
+          - tool_id: get_current_weather
+            mappings:
+              - source_field: location
+                target_field: location
+
+  - id: news_agent
+    name: News Agent
+    description: >
+      Handles news and current events queries. Searches for recent articles
+      on any topic and produces a concise summary of key findings.
+    tools:
+      - id: search_news
+        name: Search News
+        description: >
+          Searches for recent news articles matching a query. Returns a list
+          of article titles, sources, snippets, and publication dates.
+        handler: demo.tools.news.search_news
+        input_schema:
+          type: object
+          properties:
+            query:
+              type: string
+              description: Search terms or topic to find news about
+            max_results:
+              type: integer
+              description: Maximum number of articles to return (default 5)
+          required:
+            - query
+        output_schema:
+          type: object
+          properties:
+            query:
+              type: string
+            articles:
+              type: array
+              items:
+                type: object
+        depends_on: []
+
+      - id: summarize_articles
+        name: Summarize Articles
+        description: >
+          Takes a list of news articles and produces a concise bullet-point
+          summary of the key findings. Depends on search_news output.
+        handler: demo.tools.news.summarize_articles
+        input_schema:
+          type: object
+          properties:
+            articles:
+              type: array
+              description: List of article objects from search_news
+          required:
+            - articles
+        output_schema:
+          type: object
+          properties:
+            summary:
+              type: string
+            article_count:
+              type: integer
+        depends_on:
+          - tool_id: search_news
+            mappings:
+              - source_field: articles
+                target_field: articles
+
+  - id: calculator_agent
+    name: Calculator Agent
+    description: >
+      Handles mathematical computations, arithmetic expressions, and unit
+      conversions. Evaluates expressions safely and converts between common units.
+    tools:
+      - id: calculate
+        name: Calculate
+        description: >
+          Evaluates a mathematical expression and returns the numeric result.
+          Supports +, -, *, /, **, (), and basic arithmetic.
+          Example: "1500 / 12" returns 125.0
+        handler: demo.tools.calculator.calculate
+        input_schema:
+          type: object
+          properties:
+            expression:
+              type: string
+              description: Mathematical expression to evaluate (e.g., "25 * 4 + 10")
+          required:
+            - expression
+        output_schema:
+          type: object
+          properties:
+            expression:
+              type: string
+            result:
+              type: number
+            formatted:
+              type: string
+        depends_on: []
+
+      - id: convert_units
+        name: Convert Units
+        description: >
+          Converts a numeric value between units. Supported conversions include
+          temperature (celsius/fahrenheit/kelvin), distance (km/miles/meters),
+          and weight (kg/lbs/grams).
+        handler: demo.tools.calculator.convert_units
+        input_schema:
+          type: object
+          properties:
+            value:
+              type: number
+              description: The numeric value to convert
+            from_unit:
+              type: string
+              description: Source unit (e.g., "celsius", "km", "kg")
+            to_unit:
+              type: string
+              description: Target unit (e.g., "fahrenheit", "miles", "lbs")
+          required:
+            - value
+            - from_unit
+            - to_unit
+        output_schema:
+          type: object
+          properties:
+            original_value:
+              type: number
+            original_unit:
+              type: string
+            converted_value:
+              type: number
+            converted_unit:
+              type: string
+        depends_on: []
