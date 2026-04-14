@@ -42,7 +42,7 @@ Dependencies: FR-1.1
 
 Acceptance Criteria:
 - Given a sub-query and a list of available tools with their schemas, When the tool-selector LLM is invoked, Then it returns a structured plan: list of tools to call, parameters for each, and dependency relationships (which tools depend on others).
-- Given a sub-query that requires no tools, When the tool-selector runs, Then it returns an empty tool list and a direct LLM response instead.
+- Given a sub-query that requires no tools or where no proper tools are found, When the tool-selector runs, Then it returns an empty tool list and a direct, interactive LLM response based on its own knowledge instead.
 
 Priority: **Must-have**
 Constraints: Tool selection must use high-capability LLM. Output must be structured (function-calling or JSON mode).

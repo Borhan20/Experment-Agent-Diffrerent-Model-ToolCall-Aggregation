@@ -139,6 +139,10 @@ async def coordinator_node(
 
     if not valid_tasks:
         # No valid agents — produce a direct fallback response
+        direct_msg = plan_data.get("direct_response")
+        if not direct_msg:
+            direct_msg = "I don't have a specialized agent for this type of query, but I can help you route to the right ones if you ask about their domains."
+            
         routing_plan = RoutingPlan(
             tasks=[],
             execution_mode="parallel",
@@ -147,7 +151,7 @@ async def coordinator_node(
         fallback_result: AgentResult = {
             "agent_id": "__fallback__",
             "status": "success",
-            "response": "I don't have a specialized agent for this type of query.",
+            "response": direct_msg,
             "tool_executions": [],
             "error": None,
         }

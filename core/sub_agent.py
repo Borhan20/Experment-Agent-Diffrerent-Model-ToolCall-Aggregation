@@ -46,9 +46,23 @@ class SubAgentError(Exception):
     """Raised when a sub-agent encounters an unrecoverable error."""
 
 
-async def sub_agent_node(
+def create_agent_node(node_agent_id: str):
+    """Factory to create a distinct LangGraph node for a specific agent."""
+    async def agent_node(state: OrchestrationState, config: RunnableConfig) -> Dict[str, Any]:
+        routing_plan = state.get("routing_plan")
+        if not routing_plan or not routing_plan.get("tasks"):
+            return {}
+        agent_task = next((t for t in routing_plan["tasks"] if t["agent_id"] == node_agent_id), None)
+        if not agent_task:
+            return {}
+        return await _run_sub_agent(state, config, agent_task)
+    return agent_node
+
+
+async def _run_sub_agent(
     state: OrchestrationState,
     config: RunnableConfig,
+    agent_task: dict,
 ) -> Dict[str, Any]:
     """LangGraph node: run one sub-agent end-to-end.
 
@@ -67,7 +81,6 @@ async def sub_agent_node(
     app_context: AppContext = config["configurable"]["app_context"]
     status_queue = config["configurable"].get("status_queue")
 
-    agent_task = state["current_agent_task"]
     agent_id = agent_task["agent_id"]
     sub_query = agent_task["sub_query"]
     new_llm_records: List[Dict[str, Any]] = []
@@ -189,7 +202,7 @@ async def _select_tools(
         "- For params that come from another tool's output, leave them empty — "
         "the dependency resolver will fill them.\n"
         "- If tool B needs tool A's output, set depends_on: ['tool_a_id'].\n"
-        "- If no tools are needed, set tools to [] and provide a direct_response.\n"
+        "- If no tools are needed, set tools to [] and provide a direct_response based on your own knowledge to interactively answer the query.\n"
         "- Return valid JSON only."
     )
 
