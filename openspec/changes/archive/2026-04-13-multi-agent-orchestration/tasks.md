@@ -38,9 +38,9 @@ Sizes: S = <1hr, M = 1-3hr, L = 3-6hr
 
 - [x] Write all LangGraph state types (`core/state.py`): `Message`, `AgentTask`, `RoutingPlan`, `ToolExecution`, `LLMCallRecord`, `AgentResult`, `StatusEvent`, `OrchestrationState` TypedDict with reducer for `agent_results` [spec: parallel-dispatch] [size: M]
 - [x] Write coordinator node (`core/coordinator.py`): build system prompt with agent registry, call router LLM with structured output schema, parse routing plan, validate agent IDs, push status event, handle retry on malformed JSON, handle zero-agent fallback [spec: coordinator] [size: M]
-- [x] Write sub-agent node (`core/sub_agent.py`): receive `current_agent_task`, call tool selection, run tool executor, call intra-aggregation, return `AgentResult`, catch all exceptions into failed AgentResult [spec: tool-selection, aggregation] [size: L]
+- [x] Write sub-agent node logic (`core/sub_agent.py`): reusable logic to receive `current_agent_task`, call tool selection, run tool executor, call intra-aggregation, return `AgentResult`, catch all exceptions [spec: tool-selection, aggregation] [size: L]
 - [x] Write cross-aggregator node (`core/aggregator.py`): detect single vs. multi-agent case, build cross-agent prompt with successful and failed agent results, call aggregator LLM with streaming, collect chunks and push to status_events, write `final_response` [spec: aggregation] [size: M]
-- [x] Wire main LangGraph graph (`core/graph.py`): define all nodes, `START → coordinator`, conditional edge `route_to_agents()` returning `List[Send]`, `run_sub_agent → cross_aggregator`, `cross_aggregator → END`, compile graph [spec: parallel-dispatch] [size: M]
+- [x] Wire main LangGraph graph (`core/graph.py`): define distinct nodes per agent (`WeatherAgentNode`, `NewsAgentNode`, `CalculatorAgentNode`), `START → coordinator`, conditional edge `route_to_agents()` returning list of node names, parallel agent nodes → `cross_aggregator`, `cross_aggregator → END`, compile graph [spec: parallel-dispatch] [size: M]
 
 ---
 

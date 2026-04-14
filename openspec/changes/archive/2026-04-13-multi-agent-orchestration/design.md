@@ -309,15 +309,15 @@ Within each `SubAgentNode` invocation (a single Python async function):
 1. Receive: agent_id, sub_query, tool configs for this agent
 2. Build tool schema list from tool registry
 3. Call high-capability LLM (tool_selector) with sub_query + tool schemas
-   → returns ToolExecutionPlan {tools: [{tool_id, params, depends_on}]}
-4. Build dependency DAG from ToolExecutionPlan
-5. Execute tools:
-   a. Find all tools with no unmet dependencies → execute in parallel (asyncio.gather)
-   b. As each completes, resolve dependencies for waiting tools via DependencyResolver
-   c. Tools whose dependencies are now met → add to next parallel batch
-   d. Repeat until all tools executed
-6. Call cheap LLM (aggregator) with sub_query + all tool results → response string
-7. Return AgentResult
+   → returns ToolExecutionPlan {tools: [{tool_id, params, depends_on}], direct_response: Optional[str]}
+   *If no tools are applicable, the LLM falls back to its own knowledge to provide an interactive `direct_response`.*
+4. If tools exist in plan:
+   a. Build dependency DAG from ToolExecutionPlan
+   b. Execute tools: run parallel batches, resolve dependencies, repeat until done
+   c. Call cheap LLM (aggregator) with sub_query + all tool results → response string
+5. If no tools exist:
+   a. Use `direct_response` as the response string
+6. Return AgentResult
 ```
 
 ### 5.3 Dependency Resolver Logic (`core/dependency_resolver.py`)
@@ -686,7 +686,7 @@ Each LLM call appends to `state.llm_call_log`. At end of turn, log summary is pr
 
 | Decision | Options Considered | Choice | Rationale |
 |----------|-------------------|--------|-----------|
-| Sub-agent parallelism mechanism | LangGraph parallel edges vs. `Send` API vs. asyncio in single node | `Send` API | `Send` is designed for dynamic fan-out to the same node with different payloads. Parallel edges require knowing agent count at graph-build time. |
+| Sub-agent parallelism mechanism | LangGraph parallel edges vs. `Send` API vs. asyncio in single node | LangGraph parallel conditional edges | Provides clear visual mapping of individual agents as distinct nodes in the graph architecture, making the orchestration flow more explicit. Requires registering all agent nodes at graph-build time. |
 | Tool-level parallelism | LangGraph sub-graphs vs. asyncio.gather in node | asyncio.gather within sub-agent node | Nested LangGraph graphs add state propagation complexity. Tool execution is I/O-bound; asyncio.gather is ideal and keeps sub-agent as a single cohesive node. |
 | LLM adapter pattern | Direct provider SDK calls everywhere vs. Protocol adapter | Protocol adapter | Isolates provider-specific code. Swapping providers (FR-6.3) becomes a config change. Essential for NFR-2. |
 | Config format | JSON vs. YAML vs. TOML | YAML | More human-readable than JSON (comments, multi-line strings). More familiar than TOML for Python dev audience. TOML would also work but YAML has broader tooling. |
@@ -710,6 +710,17 @@ Each LLM call appends to `state.llm_call_log`. At end of turn, log summary is pr
 | FR-5.1–5.4 | specs/ui | §8 |
 | FR-6.1–6.3 | specs/config | §9, §6.3 |
 | FR-7.1 | specs/demo | §9 (agents.yaml) |
+| NFR-1 | specs/parallel-dispatch | asyncio.gather |
+| NFR-2 | specs/config | §6 |
+| NFR-3 | specs/config | §7.1 |
+| NFR-4 | all specs | §11 |
+| NFR-5 | specs/tool-execution, aggregation | §7.2 error handling |
+| NFR-6 | specs/tool-execution | §5.3 algorithm |
+| NFR-7 | specs/config | §11 startup sequence |
+| IR-1–IR-3 | specs/config | §6 |
+| IR-4 | all | §5 |
+| DR-1–DR-5 | specs/ui, coordinator | §4.2, §8.1 |
+s.yaml) |
 | NFR-1 | specs/parallel-dispatch | asyncio.gather |
 | NFR-2 | specs/config | §6 |
 | NFR-3 | specs/config | §7.1 |

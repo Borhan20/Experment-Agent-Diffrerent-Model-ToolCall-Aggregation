@@ -51,9 +51,6 @@ class OrchestrationState(TypedDict):
     conversation_history: List[Message]
     current_query: str
 
-    # Set by Send fan-out for each sub-agent branch
-    current_agent_task: Optional[AgentTask]
-
     # Written by coordinator
     routing_plan: Optional[RoutingPlan]
 
