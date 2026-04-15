@@ -1,4 +1,4 @@
-# Multi-Agent Orchestration System
+# Lean Multi-Agent Orchestration System
 
 A cost-optimized multi-agent AI orchestrator built with LangGraph and Streamlit.
 Routes user queries to specialized sub-agents, executes domain-specific tools in
